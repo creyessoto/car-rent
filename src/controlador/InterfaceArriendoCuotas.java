@@ -5,8 +5,8 @@ import modelo.Cliente;
 import modelo.Vehiculo;
 
 public interface InterfaceArriendoCuotas extends InterfaceClientes {
-    void seleccionarCliente(Cliente cliente);
-    void seleccionarAutomovil(Vehiculo vehiculo);
-    void guardarArriendoYMostrarCuotas(ArriendoCuota arriendoCuota, int precioDia);
-    void pagarPrimerCuota();
+    public void seleccionarCliente(Cliente cliente);
+    public void seleccionarAutomovil(Vehiculo vehiculo);
+    public void guardarArriendoYMostrarCuotas(ArriendoCuota arriendoCuota, int precioDia);
+    public void pagarPrimerCuota();
 }
