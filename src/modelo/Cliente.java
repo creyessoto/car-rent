@@ -10,6 +10,11 @@ public class Cliente {
         this.nombre = nombre;
         this.vigente = vigente;
     }
+    public Cliente() {
+        this.cedula = "";
+        this.nombre = "";
+        this.vigente = true;
+    }
 
     public String getCedula() {
         return cedula;

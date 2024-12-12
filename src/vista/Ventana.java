@@ -1,6 +1,8 @@
 package vista;
 
 import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class Ventana {
     private JPanel mainPanel;
@@ -16,14 +18,25 @@ public class Ventana {
     private JTable table1;
     private JButton PAGARPRIMERACUOTAButton;
 
+    public Ventana() {
+        ingresarNuevoClienteButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                VentanaAgregarUsuario ventanaAgregarUsuario = new VentanaAgregarUsuario();
+                ventanaAgregarUsuario.mostrar();
+            }
+        });
+    }
+
     public static void main(String[] args) {
         JFrame frame = new JFrame("Car-REnt");
         frame.setContentPane(new Ventana().mainPanel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setResizable(false);
         frame.setLocationRelativeTo(null);
-
         frame.pack();
         frame.setVisible(true);
     }
+
+
 }
