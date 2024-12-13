@@ -1,6 +1,6 @@
 package vista;
 
-import controlador.ControladorCliente;
+import gestor.GestorCliente;
 import modelo.Cliente;
 
 import javax.swing.*;
@@ -14,7 +14,7 @@ public class VentanaAgregarUsuario {
     private JButton AGREGARButton;
     private JCheckBox chkVigente;
 
-    ControladorCliente ctrlCliente = new ControladorCliente();
+    GestorCliente ctrlCliente = new GestorCliente();
 
     public VentanaAgregarUsuario() {
         AGREGARButton.addActionListener(new ActionListener() {

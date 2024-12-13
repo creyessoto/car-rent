@@ -35,6 +35,14 @@ public class CuotaArriendo {
         this.pagada = pagada;
     }
 
+    public boolean pagarCuota(){
+        if(!isPagada()){
+            this.setPagada(true);
+            return isPagada();
+        }
+        return false;
+    }
+
     @Override
     public String toString() {
         return "CuotaArriendo{" +

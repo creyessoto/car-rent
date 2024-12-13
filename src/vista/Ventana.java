@@ -18,6 +18,7 @@ public class Ventana {
     private JTable table1;
     private JButton PAGARPRIMERACUOTAButton;
 
+
     public Ventana() {
         ingresarNuevoClienteButton.addActionListener(new ActionListener() {
             @Override
@@ -26,6 +27,12 @@ public class Ventana {
                 ventanaAgregarUsuario.mostrar();
             }
         });
+        // Inicializar clientes en el JComboBox
+        cargarClientes();
+    }
+
+    private void cargarClientes() {
+
     }
 
     public static void main(String[] args) {
