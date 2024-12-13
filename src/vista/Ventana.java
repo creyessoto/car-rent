@@ -1,10 +1,15 @@
 package vista;
 
+import gestor.GestorCliente;
+import modelo.Cliente;
+
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
 
-public class Ventana {
+public class Ventana extends JFrame{
     private JPanel mainPanel;
     private JComboBox cmbCliente;
     private JComboBox cmbAutomovil;
@@ -17,33 +22,49 @@ public class Ventana {
     private JButton guardarArriendoYMostrarButton;
     private JTable table1;
     private JButton PAGARPRIMERACUOTAButton;
+    private GestorCliente gestorCliente = new GestorCliente();
+    private DefaultComboBoxModel clientesCmbModel = new DefaultComboBoxModel();
+    private DefaultComboBoxModel vehiculosCmbModel = new DefaultComboBoxModel();
+    private DefaultComboBoxModel arriendosCmbModel = new DefaultComboBoxModel();
 
 
     public Ventana() {
+        setContentPane(mainPanel);
+        setTitle("Car Rent");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        pack();
+        setLocationRelativeTo(null);
+        setVisible(true);
+        cmbCliente.setModel(clientesCmbModel);
+        defaultCliente();
+
         ingresarNuevoClienteButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                VentanaAgregarUsuario ventanaAgregarUsuario = new VentanaAgregarUsuario();
-                ventanaAgregarUsuario.mostrar();
+                VentanaAgregarUsuario ventanaAgregarUsuario = new VentanaAgregarUsuario(gestorCliente);
+                ventanaAgregarUsuario.pack();
+                ventanaAgregarUsuario.setLocationRelativeTo(null);
+                ventanaAgregarUsuario.setVisible(true);
+                cargarClientes();
             }
         });
-        // Inicializar clientes en el JComboBox
-        cargarClientes();
+
     }
+
+
 
     private void cargarClientes() {
-
+        clientesCmbModel.removeAllElements();
+        defaultCliente();
+        ArrayList<Cliente> listaClientes = gestorCliente.obtenerListaClientes();
+        for (Cliente cliente : listaClientes) {
+            clientesCmbModel.addElement(cliente);
+        }
     }
 
-    public static void main(String[] args) {
-        JFrame frame = new JFrame("Car-REnt");
-        frame.setContentPane(new Ventana().mainPanel);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setResizable(false);
-        frame.setLocationRelativeTo(null);
-        frame.pack();
-        frame.setVisible(true);
-    }
+    private void defaultCliente() {
+        clientesCmbModel.addElement("Seleccione CLIENTE");
 
+    }
 
 }

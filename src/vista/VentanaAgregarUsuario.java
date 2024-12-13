@@ -4,47 +4,63 @@ import gestor.GestorCliente;
 import modelo.Cliente;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class VentanaAgregarUsuario {
+public class VentanaAgregarUsuario extends JDialog {
     private JPanel mainPanel;
     private JTextField txtCedula;
     private JTextField txtNombre;
     private JButton AGREGARButton;
     private JCheckBox chkVigente;
+    private GestorCliente gestorCliente;
 
-    GestorCliente ctrlCliente = new GestorCliente();
 
-    public VentanaAgregarUsuario() {
+    public VentanaAgregarUsuario(GestorCliente gestorCliente) {
+        setContentPane(mainPanel);
+        setModal(true);
+        getRootPane().setDefaultButton(AGREGARButton);
+
+        this.gestorCliente = gestorCliente;
+
         AGREGARButton.addActionListener(new ActionListener() {
-            @Override
             public void actionPerformed(ActionEvent e) {
-                Cliente cliente = new Cliente();
-                cliente.setCedula(txtCedula.getText().trim());
-                cliente.setNombre(txtNombre.getText().trim());
-                if(chkVigente.isSelected()){
-                    cliente.setVigente(true);
-                }else {
-                    cliente.setVigente(false);
-                }
-                if(ctrlCliente.agregarCliente(cliente)){
-                    javax.swing.JOptionPane.showMessageDialog(null,"Cliente agregado");
-                }
-
+                agregar();
             }
         });
     }
 
-    public void mostrar(){
-        JFrame frame = new JFrame("Agregar usuario");
-        frame.setContentPane(new VentanaAgregarUsuario().mainPanel);
-        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        frame.setSize(400, 200);
-        frame.setLocationRelativeTo(null);
-        frame.setResizable(false);
-        frame.setVisible(true);
+    private void agregar() {
+        if(!validarEntradaDatos()) {
+            return;
+        }
+        String cedula = txtCedula.getText();
+        String nombre = txtNombre.getText();
+        boolean vigente = chkVigente.isSelected();
+        try {
+            if (gestorCliente.validarCliente(cedula)) {
+                JOptionPane.showMessageDialog(this, "Cliente ya existe!", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            Cliente nuevoCliente = new Cliente(cedula, nombre, vigente);
+            gestorCliente.agregarCliente(nuevoCliente);
+            JOptionPane.showMessageDialog(this, "Cliente agregado correctamente!", "Cliente Agregado", JOptionPane.INFORMATION_MESSAGE);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+        dispose();
     }
 
-
+    private boolean validarEntradaDatos () {
+        if (txtCedula.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Debe ingresar una cedula", "Error", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+        if (txtNombre.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Debe ingresar un nombre", "Error", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+        return true;
+    }
 }

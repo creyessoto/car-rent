@@ -3,27 +3,30 @@ package gestor;
 import modelo.Cliente;
 
 import java.util.ArrayList;
+import java.util.List;
 
-public class GestorCliente implements InterfaceClientes {
+public class GestorCliente {
 
     private ArrayList<Cliente> clientes;
 
     public GestorCliente() {
-        clientes = new ArrayList<>();
-        clientes.add(new Cliente("12345678-9", "Juan Pérez", true));
-        clientes.add(new Cliente("98765432-1", "Ana Gómez", false));
-        clientes.add(new Cliente("45678912-3", "Carlos Ruiz", true));
-
+        this.clientes = new ArrayList<>();
     }
 
-    public ArrayList<Cliente> getClientes() {
+    public void agregarCliente(Cliente cliente) {
+        System.out.println(cliente);
+        clientes.add(cliente);
+    }
+
+    public ArrayList<Cliente> obtenerListaClientes() {
         return clientes;
     }
-
-    @Override
-    public boolean agregarCliente(Cliente cliente) {
-        System.out.println(cliente);
-        return clientes.add(cliente);
-
+    public boolean validarCliente(String cedula) {
+        for (Cliente cliente : clientes) {
+            if (cliente.getCedula().equals(cedula)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
