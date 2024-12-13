@@ -20,6 +20,7 @@ public class VentanaAgregarUsuario extends JDialog {
     public VentanaAgregarUsuario(GestorCliente gestorCliente) {
         setContentPane(mainPanel);
         setModal(true);
+        setResizable(false);
         getRootPane().setDefaultButton(AGREGARButton);
 
         this.gestorCliente = gestorCliente;

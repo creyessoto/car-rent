@@ -1,7 +1,9 @@
 package vista;
 
 import gestor.GestorCliente;
+import gestor.GestorVehiculos;
 import modelo.Cliente;
+import modelo.Vehiculo;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -23,6 +25,7 @@ public class Ventana extends JFrame{
     private JTable table1;
     private JButton PAGARPRIMERACUOTAButton;
     private GestorCliente gestorCliente = new GestorCliente();
+    private GestorVehiculos gestorVehiculos = new GestorVehiculos();
     private DefaultComboBoxModel clientesCmbModel = new DefaultComboBoxModel();
     private DefaultComboBoxModel vehiculosCmbModel = new DefaultComboBoxModel();
     private DefaultComboBoxModel arriendosCmbModel = new DefaultComboBoxModel();
@@ -30,12 +33,15 @@ public class Ventana extends JFrame{
 
     public Ventana() {
         setContentPane(mainPanel);
-        setTitle("Car Rent");
+        setTitle("Arriendo de vehiculos Car-REnt");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setResizable(false);
         pack();
         setLocationRelativeTo(null);
         setVisible(true);
         cmbCliente.setModel(clientesCmbModel);
+        cmbAutomovil.setModel(vehiculosCmbModel);
+        cargarAutomoviles();
         defaultCliente();
 
         ingresarNuevoClienteButton.addActionListener(new ActionListener() {
@@ -62,9 +68,20 @@ public class Ventana extends JFrame{
         }
     }
 
+    private void cargarAutomoviles() {
+        clientesCmbModel.removeAllElements();
+        defaultAutomoviles();
+        ArrayList<Vehiculo> listaVehiculos = gestorVehiculos.obtenerListaVehiculos();
+        for (Vehiculo vehiculo : listaVehiculos) {
+            vehiculosCmbModel.addElement(vehiculo);
+        }
+    }
+
     private void defaultCliente() {
         clientesCmbModel.addElement("Seleccione CLIENTE");
-
+    }
+    private void defaultAutomoviles() {
+        vehiculosCmbModel.addElement("Seleccione AUTOMOVIL");
     }
 
 }
