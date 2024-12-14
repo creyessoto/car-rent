@@ -5,12 +5,17 @@ import gestor.GestorCliente;
 import gestor.GestorVehiculos;
 import modelo.ArriendoCuota;
 import modelo.Cliente;
+import modelo.CuotaArriendo;
 import modelo.Vehiculo;
+import vista.utils.TablaCuotasModel;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Ventana extends JFrame{
     private JPanel mainPanel;
@@ -19,12 +24,16 @@ public class Ventana extends JFrame{
     private JButton ingresarNuevoClienteButton;
     private JTextField txtFechaArriendo;
     private JTextField txtDias;
-    private JTextField txtMontoAPagar;
     private JTextField txtPrecioXDia;
     private JTextField txtCantCuotas;
     private JButton guardarArriendoYMostrarButton;
-    private JTable table1;
-    private JButton PAGARPRIMERACUOTAButton;
+    private JButton PAGARCUOTAButton;
+    private JComboBox cmbArriendos;
+    private JButton habilitarGeneracionDeArriendosButton;
+    private JTable tblCuotas;
+    private JLabel lblMontoPagado;
+    private JLabel lblMontoAPagar;
+    private TablaCuotasModel tablaCuotasModel;
     private GestorCliente gestorCliente = new GestorCliente();
     private GestorVehiculos gestorVehiculos = new GestorVehiculos();
     private GestorArriendoCuotas gestorArriendoCuotas = new GestorArriendoCuotas();
@@ -37,14 +46,22 @@ public class Ventana extends JFrame{
         setContentPane(mainPanel);
         setTitle("Arriendo de vehiculos Car-REnt");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setResizable(false);
+        setResizable(true);
         pack();
         setLocationRelativeTo(null);
         setVisible(true);
         cmbCliente.setModel(clientesCmbModel);
         cmbAutomovil.setModel(vehiculosCmbModel);
+        cmbArriendos.setModel(arriendosCmbModel);
         cargarAutomoviles();
         defaultCliente();
+        primeraCargaComboBoxArriendo();
+        tablaCuotasModel = new TablaCuotasModel(new ArrayList<CuotaArriendo>());
+        tblCuotas.setModel(tablaCuotasModel);
+        toggleComponents(true);
+        PAGARCUOTAButton.setEnabled(false);
+        habilitarGeneracionDeArriendosButton.setEnabled(false);
+
 
         ingresarNuevoClienteButton.addActionListener(new ActionListener() {
             @Override
@@ -65,12 +82,11 @@ public class Ventana extends JFrame{
                 }
                 Cliente cliente = (Cliente) cmbCliente.getSelectedItem();
                 Vehiculo vehiculo = (Vehiculo) cmbAutomovil.getSelectedItem();
+                String fechaArriendo = txtFechaArriendo.getText();
                 int cantDias = Integer.parseInt(txtDias.getText());
                 int cantCuotas = Integer.parseInt(txtCantCuotas.getText());
                 int precioXDia = Integer.parseInt(txtPrecioXDia.getText());
-                int numArriendo = 0;
-                String fechaArriendo = txtFechaArriendo.getText();
-
+                int numArriendo = obtenerUltimoNumeroArriendo() + 1;
                 ArriendoCuota arriendoCuota = new ArriendoCuota(numArriendo,fechaArriendo,cantDias,cliente,vehiculo,cantCuotas);
                 if(arriendoCuota.evaluarArriendo()){
                     gestorArriendoCuotas.agregarArriendoCuota(arriendoCuota);
@@ -83,6 +99,51 @@ public class Ventana extends JFrame{
                 }
             }
         });
+        habilitarGeneracionDeArriendosButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                toggleComponents(true);
+                PAGARCUOTAButton.setEnabled(false);
+                habilitarGeneracionDeArriendosButton.setEnabled(false);
+                cmbArriendos.setSelectedIndex(0);
+                limpiarTabla();
+                lblMontoAPagar.setText("");
+                lblMontoPagado.setText("");
+            }
+        });
+        PAGARCUOTAButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                pagarCuotas();
+            }
+        });
+        cmbArriendos.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if(e.getStateChange()==ItemEvent.SELECTED && cmbArriendos.getSelectedIndex() != 0){
+                    ArriendoCuota arriendoCuota = (ArriendoCuota) cmbArriendos.getSelectedItem();
+                    if(arriendoCuota != null) {
+                        actualizarTablaCuotas(arriendoCuota.getCuotaArriendos());
+                        int montoAPagar = obtenerMontoAPagar(arriendoCuota.getCuotaArriendos());
+                        int montoPagado = obtenerMontoPagado(arriendoCuota.getCuotaArriendos());
+                        lblMontoAPagar.setText(String.valueOf(montoAPagar));
+                        lblMontoPagado.setText(String.valueOf(montoPagado));
+                        toggleComponents(false);
+                        PAGARCUOTAButton.setEnabled(true);
+                        habilitarGeneracionDeArriendosButton.setEnabled(true);
+                    }
+                }
+                if(cmbArriendos.getSelectedIndex() == 0){
+                    toggleComponents(true);
+                    PAGARCUOTAButton.setEnabled(false);
+                    habilitarGeneracionDeArriendosButton.setEnabled(false);
+                    limpiarTabla();
+                    lblMontoAPagar.setText("");
+                    lblMontoPagado.setText("");
+                }
+            }
+        });
+
     }
 
     private void cargarClientes() {
@@ -95,7 +156,7 @@ public class Ventana extends JFrame{
     }
 
     private void cargarAutomoviles() {
-        clientesCmbModel.removeAllElements();
+        vehiculosCmbModel.removeAllElements();
         defaultAutomoviles();
         ArrayList<Vehiculo> listaVehiculos = gestorVehiculos.obtenerListaVehiculos();
         for (Vehiculo vehiculo : listaVehiculos) {
@@ -170,21 +231,79 @@ public class Ventana extends JFrame{
         }
         return true;
     }
+    private void pagarCuotas () {
+        int[] selectedRows = tblCuotas.getSelectedRows();
+        if (selectedRows.length == 0) {
+            JOptionPane.showMessageDialog(this, "Debe seleccionar al menos una cuota para pagar", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        ArriendoCuota arriendoCuota = (ArriendoCuota) cmbArriendos.getSelectedItem();
+        for (int selectedRow : selectedRows) {
+            int numeroCuota = (int) tblCuotas.getValueAt(selectedRow, 0);
+            if (!arriendoCuota.pagarCuota(numeroCuota)) {
+                JOptionPane.showMessageDialog(this, "No es posible pagar la cuota " + numeroCuota, "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+        }
+        actualizarTablaCuotas(arriendoCuota.getCuotaArriendos());
+        int montoPagado = obtenerMontoPagado(arriendoCuota.getCuotaArriendos());
+        System.out.println(montoPagado);
+        int montoAPagar = obtenerMontoAPagar(arriendoCuota.getCuotaArriendos());
+        lblMontoPagado.setText(String.valueOf(montoPagado));
+        lblMontoAPagar.setText(String.valueOf(montoAPagar));
+        JOptionPane.showMessageDialog(this, "Cuotas pagadas correctamente", "Cuotas pagadas", JOptionPane.INFORMATION_MESSAGE);
+
+    }
 
     private void trimValues(){
 
         cmbCliente.setSelectedIndex(0);
         cmbAutomovil.setSelectedIndex(0);
-        //arriendosCmbModel.setSelectedIndex(0);
+        cmbArriendos.setSelectedIndex(0);
         txtFechaArriendo.setText("");
         txtDias.setText("");
-        txtMontoAPagar.setText("");
+        lblMontoAPagar.setText("");
         txtPrecioXDia.setText("");
         txtCantCuotas.setText("");
     }
 
-    private void actualizarCmbArriendos() {
+    private void toggleComponents(boolean toggle){
+        cmbCliente.setEnabled(toggle);
+        cmbAutomovil.setEnabled(toggle);
+        txtFechaArriendo.setEnabled(toggle);
+        txtDias.setEnabled(toggle);
+        lblMontoAPagar.setEnabled(toggle);
+        txtPrecioXDia.setEnabled(toggle);
+        txtCantCuotas.setEnabled(toggle);
+        guardarArriendoYMostrarButton.setEnabled(toggle);
+        PAGARCUOTAButton.setEnabled(toggle);
+        ingresarNuevoClienteButton.setEnabled(toggle);
+    }
+    public void actualizarTablaCuotas(ArrayList<CuotaArriendo> cuotas) {
+        tablaCuotasModel.actualizarTabla(cuotas);
+        tblCuotas.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+    }
 
+
+    private void actualizarCmbArriendos() {
+        ItemListener[] itemListeners = cmbArriendos.getItemListeners();
+        for (ItemListener itemListener : itemListeners) {
+            cmbArriendos.removeItemListener(itemListener);
+        }
+        arriendosCmbModel.removeAllElements();
+        primeraCargaComboBoxArriendo();
+        List<ArriendoCuota> listaArriendos = gestorArriendoCuotas.obtenerListaArriendoCuotas();
+        for (ArriendoCuota arriendoCuota : listaArriendos) {
+            arriendosCmbModel.addElement(arriendoCuota);
+        }
+        for (ItemListener itemListener : itemListeners) {
+            cmbArriendos.addItemListener(itemListener);
+        }
+
+    }
+
+    private void primeraCargaComboBoxArriendo() {
+        arriendosCmbModel.addElement("Seleccione un arriendo");
     }
 
     private boolean validarFecha(String fecha) {
@@ -209,6 +328,39 @@ public class Ventana extends JFrame{
         }
         return true;
     }
+    private void limpiarTabla(){tablaCuotasModel.limpiarTabla();    }
+
+    private int obtenerMontoPagado (ArrayList<CuotaArriendo> cuotas) {
+        int montoPagado = 0;
+        for (CuotaArriendo cuota : cuotas) {
+            if (cuota.isPagada()) {
+                montoPagado += cuota.getValorCuota();
+            }
+        }
+        return montoPagado;
+    }
+
+    private int obtenerMontoAPagar (ArrayList<CuotaArriendo> cuotas) {
+        int montoAPagar = 0;
+        for (CuotaArriendo cuota : cuotas) {
+            if (!cuota.isPagada()) {
+                montoAPagar += cuota.getValorCuota();
+            }
+        }
+        return montoAPagar;
+    }
+
+    private int obtenerUltimoNumeroArriendo() {
+        int numeroArriendo = 0;
+        List<ArriendoCuota> listaArriendos = gestorArriendoCuotas.obtenerListaArriendoCuotas();
+        for (ArriendoCuota arriendoCuota : listaArriendos) {
+            if (arriendoCuota.getNumArriendo() > numeroArriendo) {
+                numeroArriendo = arriendoCuota.getNumArriendo();
+            }
+        }
+        return numeroArriendo;
+    }
+
 
 
 

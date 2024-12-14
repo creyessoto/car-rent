@@ -63,9 +63,6 @@ public class ArriendoCuota extends Arriendo {
 
     @Override
     public String toString() {
-        return "ArriendoCuota{" +
-                "cantCuotas=" + cantCuotas +
-                ", cuotaArriendos=" + cuotaArriendos +
-                '}';
+        return "N° Arriendo " + this.getNumArriendo() + " Cliente " + this.getCliente().getNombre() + " Vehiculo " + this.getVehiculo().getPatente();
     }
 }
